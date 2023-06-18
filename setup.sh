@@ -1,0 +1,3 @@
+export DB_USER=defaultuser
+export DB_PASSWORD=defaultpassword
+export DB_NAME=repositories

@@ -1,0 +1,74 @@
+version: "3"
+
+volumes:
+  postgres_data:
+services:
+
+  # Application
+  # nodejsapp:
+  #   image: igoreulalio/nodejs-observability-sample-application:v1
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - OTEL_EXPORTER_OTLP_ENDPOINT=127.0.0.1:4318
+  #     - SERVICE_NAME=nodejs-app
+  #     - POSTGRES_USER=defaultuser
+  #     - POSTGRES_PASSWORD=defaultpassword
+  #     - POSTGRES_DB=repositories
+  # Otel Collector
+  collector:
+    image: otel/opentelemetry-collector-contrib:0.72.0
+    command: ["--config=/conf/collector-config.yaml"]
+    volumes:
+      - ./otel/collector-config.yaml:/conf/collector-config.yaml
+    ports:
+      - "9464:9464"
+      - "4317:4317"
+      - "4318:4318"
+  # Prometheus
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+  # Grafana
+  grafana:
+    image: grafana/grafana:9.0.1
+    container_name: grafana
+    volumes:
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana/provisioning/:/etc/grafana/provisioning/
+    ports:
+      - "3000:3000"
+  # Tempo
+  tempo:
+    image: grafana/tempo:2.0.1
+    command: [ "-config.file=/etc/tempo.yml"]
+    volumes:
+      - ./tempo/tempo.yaml:/etc/tempo.yml
+    ports:
+      - "3200:3200"
+  # Database
+  db:
+    image: postgres:13
+    restart: always
+    environment:
+      POSTGRES_USER: defaultuser
+      POSTGRES_PASSWORD: defaultpassword
+      POSTGRES_DB: repositories
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+      - ./postgresql/init-db.sh:/docker-entrypoint-initdb.d/init.sql
+
+  # Loki
+  loki:
+    image: grafana/loki:2.7.4 # rootless
+    command: [ "-config.file=/etc/loki/local-config.yaml" ]
+    volumes:
+      - ./loki/loki-local-config.yaml:/etc/loki/local-config.yaml
+    ports:
+      - 3100:3100
