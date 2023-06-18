@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/logger"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/models"
+	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/utils"
 	"github.com/go-playground/validator"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -43,7 +45,7 @@ func CreateRepository(r *mux.Router, db *sqlx.DB, path string) {
 
 		err := json.NewDecoder(r.Body).Decode(&repo)
 		if err != nil {
-			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			utils.WriteError(w, http.StatusBadRequest, "Invalid request body.")
 			logger.Log.Error("Error decoding repository object: %s", err)
 			return
 		}
@@ -51,13 +53,20 @@ func CreateRepository(r *mux.Router, db *sqlx.DB, path string) {
 		validate := validator.New()
 		err = validate.Struct(repo)
 		if err != nil {
-			http.Error(w, "Invalid repository data", http.StatusUnprocessableEntity)
+			var errors []string
+			for _, fieldErr := range err.(validator.ValidationErrors) {
+				field := fieldErr.Field()
+				tag := fieldErr.Tag()
+				errors = append(errors, fmt.Sprintf("%s failed on %s validation", field, tag))
+			}
+			utils.WriteError(w, http.StatusUnprocessableEntity, strings.Join(errors, ", "))
+			logger.Log.Error("Validation failed for repository object: %s", err)
 			return
 		}
 
 		repo.ID, err = generateRepoId()
 		if err != nil {
-			http.Error(w, "Server error", http.StatusInternalServerError)
+			utils.WriteError(w, http.StatusInternalServerError, "Internal Server Error.")
 			logger.Log.Error("Error generating UUID for RepositoryID: %s", err)
 			return
 		}
