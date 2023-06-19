@@ -15,8 +15,10 @@ exporters:
       insecure: true
   prometheus:
     endpoint: "0.0.0.0:9464"
-  zipkin:
-    endpoint: "http://zipkin-all-in-one:9411/api/v2/spans"
+  jaeger:
+    endpoint: "http://jaeger:14250"
+    tls:
+      insecure: true
 processors:
   batch:
 
@@ -27,7 +29,7 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      exporters: [otlp]
+      exporters: [otlp, jaeger]
       processors: [batch]
     metrics:
       receivers: [otlp]

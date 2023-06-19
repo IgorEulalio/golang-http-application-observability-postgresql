@@ -2,10 +2,9 @@ package metrics
 
 import (
 	"context"
-	"os"
 	"time"
 
-	"go.opentelemetry.io/otel/attribute"
+	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/config"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
@@ -23,15 +22,11 @@ func InitMetricsProvider(ctx context.Context) (*sdkmetric.MeterProvider, error) 
 		return nil, err
 	}
 
-	serviceName := os.Getenv("SERVICE_NAME")
-	if serviceName == "" {
-		serviceName = "repositories-service"
-	}
 	// labels/tags/resources that are common to all metrics.
 	resource := resource.NewWithAttributes(
 		semconv.SchemaURL,
-		semconv.ServiceNameKey.String(serviceName),
-		attribute.String("some-attribute", "some-value"),
+		semconv.ServiceNameKey.String(config.Config.ServiceName),
+		// attribute.String("some-attribute", "some-value"),
 	)
 
 	mp := sdkmetric.NewMeterProvider(

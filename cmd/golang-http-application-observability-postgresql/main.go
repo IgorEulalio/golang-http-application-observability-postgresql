@@ -9,6 +9,7 @@ import (
 
 	"net/http"
 
+	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/config"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/database"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/handler"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/logger"
@@ -23,6 +24,11 @@ import (
 )
 
 const SERVICE_NAME = "repository-service"
+
+func init() {
+	// Load initial configuration
+	config.LoadConfig()
+}
 
 func main() {
 

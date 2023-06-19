@@ -3,18 +3,23 @@ package middleware
 import (
 	"context"
 	"net/http"
-	"os"
 
+	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/config"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/logger"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/metrics"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )
 
-var serviceName = os.Getenv("SERVICE_NAME")
+var serviceName = config.Config.ServiceName
 var httpRequestCounter metric.Int64Counter
 
 func init() {
+
+	if config.Config == nil {
+		config.LoadConfig()
+	}
+
 	err := InitHTTPRequestCounter()
 	if err != nil {
 		// Here you can't return the error so you might want to handle it accordingly

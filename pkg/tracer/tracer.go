@@ -3,9 +3,9 @@ package tracer
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
+	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/config"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -17,7 +17,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 )
 
-var SERVICE_NAME = os.Getenv("SERVICE_NAME")
+var SERVICE_NAME = config.Config.ServiceName
 
 func InitProvider() (func(context.Context) error, error) {
 	ctx := context.Background()

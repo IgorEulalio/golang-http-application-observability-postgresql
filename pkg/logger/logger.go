@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/config"
 	"github.com/sirupsen/logrus"
 )
 
@@ -65,19 +66,18 @@ func LogRequestResponse(next http.Handler) http.Handler {
 }
 
 func init() {
+
+	if config.Config == nil {
+		config.LoadConfig()
+	}
+
 	logger := logrus.New()
 	logger.SetOutput(os.Stdout)
 	logger.SetFormatter(&logrus.JSONFormatter{})
 
-	serviceName := os.Getenv("SERVICE_NAME")
-	if serviceName == "" {
-		serviceName = "repository-service"
-	}
+	serviceName := config.Config.ServiceName
 
-	logLevel := os.Getenv("LOG_LEVEL")
-	if logLevel == "" {
-		logLevel = "info"
-	}
+	logLevel := config.Config.LogLevel
 
 	level, err := logrus.ParseLevel(strings.ToLower(logLevel))
 	if err != nil {
