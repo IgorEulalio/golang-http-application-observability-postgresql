@@ -37,6 +37,10 @@ func main() {
 	defer db.Close()
 
 	shutdown := initializeTracer()
+	err := initAndSetGlobalMeterProvider()
+	if err != nil {
+		logger.Log.Error("Error initializing metrics provider.")
+	}
 
 	// Create server
 	r := setupRouter()
@@ -73,16 +77,19 @@ func initializeTracer() func(context.Context) error {
 	return shutdown
 }
 
-func InitAndSetGlobalMeterProvider() error {
+func initAndSetGlobalMeterProvider() error {
 	ctx := context.Background()
 	meterProvider, err := metrics.InitMetricsProvider(ctx)
 	if err != nil {
 		return err
 	}
+
+	meter := meterProvider.Meter(config.Config.ServiceName)
 	logger.Log.Info("Initialized metrics provider.")
 
 	// Set as global MeterProvider
 	otel.SetMeterProvider(meterProvider)
+	middleware.InitMetrics(meter)
 
 	return nil
 }
