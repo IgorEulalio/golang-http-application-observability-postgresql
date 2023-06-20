@@ -11,6 +11,8 @@ type Configuration struct {
 	DatabaseName            string
 	DatabasePassword        string
 	ConfigurationServiceURL string
+	OtelCollectorEndpoint   string
+	OtelCollectorPort       string
 }
 
 var Config *Configuration
@@ -23,6 +25,8 @@ func LoadConfig() {
 		DatabaseName:            getEnv("DB_NAME", "repositories"),
 		DatabasePassword:        getEnv("DB_PASSWORD", "defaultpassword"),
 		ConfigurationServiceURL: getEnv("CONFIGURATION_SERVICE_URL", "http://localhost:8081"),
+		OtelCollectorEndpoint:   getEnv("OTEL_COLLECTOR_ENDPOINT", "localhost"),
+		OtelCollectorPort:       getEnv("OTEL_COLLECTOR_PORT", "4317"),
 	}
 }
 
