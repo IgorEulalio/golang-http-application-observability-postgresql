@@ -9,6 +9,7 @@ import (
 
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/config"
 	"github.com/sirupsen/logrus"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var Log *logrus.Entry
@@ -50,6 +51,11 @@ func LogRequestResponse(next http.Handler) http.Handler {
 
 		next.ServeHTTP(rw, r)
 
+		// Extract the trace ID from the context.
+		span := trace.SpanFromContext(r.Context())
+
+		traceID := span.SpanContext().TraceID().String()
+
 		duration := time.Since(startTime)
 		Log.WithFields(logrus.Fields{
 			"method":          r.Method,
@@ -61,6 +67,7 @@ func LogRequestResponse(next http.Handler) http.Handler {
 			"responseBody":    rw.body.String(),
 			"requestHeaders":  r.Header,
 			"responseHeaders": rw.Header(),
+			"traceId":         traceID,
 		}).Info("Handled request")
 	})
 }

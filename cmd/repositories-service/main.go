@@ -23,8 +23,6 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
-const SERVICE_NAME = "repository-service"
-
 func init() {
 	// Load initial configuration
 	config.LoadConfig()
@@ -37,10 +35,7 @@ func main() {
 	defer db.Close()
 
 	shutdown := initializeTracer()
-	err := initAndSetGlobalMeterProvider()
-	if err != nil {
-		logger.Log.Error("Error initializing metrics provider.")
-	}
+	initAndSetGlobalMeterProvider()
 
 	// Create server
 	r := setupRouter()
@@ -81,7 +76,8 @@ func initAndSetGlobalMeterProvider() error {
 	ctx := context.Background()
 	meterProvider, err := metrics.InitMetricsProvider(ctx)
 	if err != nil {
-		return err
+		logger.Log.Error("Error initializing metrics provider.")
+		os.Exit(1)
 	}
 
 	meter := meterProvider.Meter(config.Config.ServiceName)
@@ -89,24 +85,28 @@ func initAndSetGlobalMeterProvider() error {
 
 	// Set as global MeterProvider
 	otel.SetMeterProvider(meterProvider)
-	middleware.InitMetrics(meter)
+	err = middleware.InitMetrics(meter)
+	if err != nil {
+		logger.Log.Error("Error initializing metrics.")
+		os.Exit(1)
+	}
 
 	return nil
 }
 
 func setupRouter() *mux.Router {
 	r := mux.NewRouter()
-	r.Use(otelmux.Middleware(SERVICE_NAME))
+	r.Use(otelmux.Middleware(config.Config.ServiceName))
 	r.Use(logger.LogRequestResponse)
 	r.Use(middleware.HTTPRequestCounter)
-
+	r.Use(middleware.TracingMiddleware)
 	return r
 }
 
 func startServer(r *mux.Router) *http.Server {
 	srv := &http.Server{
 		Addr:    ":8080",
-		Handler: otelhttp.NewHandler(r, SERVICE_NAME),
+		Handler: otelhttp.NewHandler(r, config.Config.ServiceName),
 	}
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {

@@ -15,6 +15,7 @@ var httpRequestCounter metric.Int64Counter
 
 func InitMetrics(meter metric.Meter) error {
 	var err error
+
 	httpRequestCounter, err = meter.Int64Counter(
 		"http_request_total",
 		metric.WithDescription("Counts total HTTP requests"),
@@ -35,8 +36,21 @@ func HTTPRequestCounter(next http.Handler) http.Handler {
 			attribute.String("path", r.URL.Path),
 			attribute.String("service", serviceName),
 		}
-		logger.Log.Debug("metric added...")
 		httpRequestCounter.Add(context.Background(), 1, metric.WithAttributes(attrs...))
+		logger.Log.Debug("Sum 1 to %s metric", "http_request_total")
+		next.ServeHTTP(w, r)
+	})
+}
+
+func TracingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Extract the trace from the incoming request
+		ctx := r.Context()
+
+		// Update the request with the new context
+		r = r.WithContext(ctx)
+
+		// Call the next handler, which can be another middleware function or the final handler
 		next.ServeHTTP(w, r)
 	})
 }

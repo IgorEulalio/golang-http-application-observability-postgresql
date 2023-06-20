@@ -1,12 +1,15 @@
 package handler
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/config"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/logger"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/models"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/utils"
@@ -14,6 +17,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/propagation"
 )
 
 func GetAllRepositories(r *mux.Router, db *sqlx.DB, path string) {
@@ -22,14 +27,14 @@ func GetAllRepositories(r *mux.Router, db *sqlx.DB, path string) {
 		err := db.Select(&repos, "SELECT * FROM repositories")
 		if err != nil {
 			// handle error
-			fmt.Fprintf(w, "Error: %s", err)
+			utils.WriteError(w, http.StatusInternalServerError, "Error fetching repositories.")
 			return
 		}
 
 		jsonResponse, err := json.Marshal(repos)
 		if err != nil {
 			// handle error
-			fmt.Fprintf(w, "Error: %s", err)
+			utils.WriteError(w, http.StatusUnprocessableEntity, "Error marshalling repository into struct.")
 			return
 		}
 
@@ -73,6 +78,15 @@ func CreateRepository(r *mux.Router, db *sqlx.DB, path string) {
 
 		repo.CreationDate = time.Now()
 
+		configId := repo.ConfigurationID
+
+		repo.ConfigurationID, err = fetchConfigurationId(r.Context(), configId)
+		if err != nil {
+			utils.WriteError(w, http.StatusUnprocessableEntity, fmt.Sprintf("Error getting configurationId %s from the configuration service", configId))
+			logger.Log.Error(err)
+			return
+		}
+
 		insertQuery := `INSERT INTO repositories (id, name, owner, creationdate, configurationid) VALUES ($1, $2, $3, $4, $5)`
 
 		_, err = db.Exec(insertQuery, repo.ID, repo.Name, repo.Owner, repo.CreationDate, repo.ConfigurationID)
@@ -92,6 +106,46 @@ func CreateRepository(r *mux.Router, db *sqlx.DB, path string) {
 		w.Write(jsonResponse)
 	}).Methods(http.MethodPost)
 
+}
+
+func fetchConfigurationId(ctx context.Context, configID string) (string, error) {
+	// Generate the URL for service B
+	url := fmt.Sprintf("%s/%s/%s", config.Config.ConfigurationServiceURL, "configuration", configID)
+	logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Info("Requesting configuration service...")
+	// Create a new request
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return "", fmt.Errorf("error creating request for configuration service: %w", err)
+	}
+
+	// Inject the current span context into the headers of the outbound request
+	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(req.Header))
+
+	// Send GET request to service B
+	response, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("error communicating with configuration service. Error: %s", err)
+	}
+	if response.StatusCode != 200 {
+		// handle error
+		return "", fmt.Errorf("error communicating with configuration service. Status Code: %s", strconv.Itoa(response.StatusCode))
+	}
+	defer response.Body.Close()
+
+	// Decode the response
+	var result map[string]string
+	err = json.NewDecoder(response.Body).Decode(&result)
+	if err != nil {
+		// handle error
+		return "", fmt.Errorf("error decoding response from service B: %w", err)
+	}
+
+	logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Info("Configuration service called successfully.")
+
+	// Extract the configuration value
+	configuration := result["configuration"]
+
+	return configuration, nil
 }
 
 func generateRepoId() (string, error) {
