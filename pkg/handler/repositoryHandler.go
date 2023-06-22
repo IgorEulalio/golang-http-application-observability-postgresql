@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -32,6 +33,39 @@ func GetAllRepositories(r *mux.Router, db *sqlx.DB, path string) {
 		}
 
 		jsonResponse, err := json.Marshal(repos)
+		if err != nil {
+			// handle error
+			utils.WriteError(w, http.StatusUnprocessableEntity, "Error marshalling repository into struct.")
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonResponse)
+	}).Methods(http.MethodGet) // set the HTTP method to GET
+}
+
+func GetRepositoryById(r *mux.Router, db *sqlx.DB, path string) {
+	r.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		var repo models.Repository
+		vars := mux.Vars(r)
+		repositoryId := vars["repository_id"]
+		ctx := r.Context()
+
+		query := "SELECT * FROM repositories WHERE id = $1"
+		err := db.Get(&repo, query, repositoryId)
+
+		if err != nil {
+			if err == sql.ErrNoRows {
+				logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("Repository with id %s not found", repositoryId))
+				utils.WriteError(w, http.StatusNotFound, fmt.Sprintf("Repository with id %s not found", repositoryId))
+			} else {
+				logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("Error fetching repository with id %s. Error: %s", repositoryId, err))
+				utils.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("Error fetching repository with id %s.", repositoryId))
+			}
+			return
+		}
+		jsonResponse, err := json.Marshal(repo)
 		if err != nil {
 			// handle error
 			utils.WriteError(w, http.StatusUnprocessableEntity, "Error marshalling repository into struct.")

@@ -43,6 +43,7 @@ func main() {
 	// Setup repository route
 	handler.GetAllRepositories(r, db, "/repositories")
 	handler.CreateRepository(r, db, "/repositories")
+	handler.GetRepositoryById(r, db, "/repositories/{repository_id}")
 
 	srv := startServer(r)
 
