@@ -142,6 +142,48 @@ func CreateRepository(r *mux.Router, db *sqlx.DB, path string) {
 
 }
 
+func DeleteRepository(r *mux.Router, db *sqlx.DB, path string) {
+	r.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+
+		vars := mux.Vars(r)
+		repositoryId, ok := vars["repository_id"]
+
+		ctx := r.Context()
+
+		if !ok {
+			logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("RepositoryId %s not sent properly.", repositoryId))
+			utils.WriteError(w, http.StatusBadRequest, fmt.Sprintf("Error receiving repository_id variable. Variable value: %s", repositoryId))
+			return
+		}
+
+		query := `DELETE FROM repositories WHERE id = $1`
+
+		result, err := db.ExecContext(ctx, query, repositoryId)
+		if err != nil {
+			logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("Error deleting repository %s. Error: %s", repositoryId, err))
+			utils.WriteError(w, http.StatusNotFound, fmt.Sprintf("Error deleting repository with ID %s.", repositoryId))
+			return
+		}
+
+		rowsAffected, err := result.RowsAffected()
+		if err != nil {
+			utils.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("Error deleting repository with ID %s.", repositoryId))
+			logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("Error deleting repository %s. Error: %s", repositoryId, err))
+			return
+		}
+
+		if rowsAffected == 0 {
+			logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("Repository with id %s not found. Error: %s", repositoryId, err))
+			utils.WriteError(w, http.StatusNotFound, fmt.Sprintf("Repository with id %s not found.", repositoryId))
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNoContent)
+
+	}).Methods(http.MethodDelete)
+}
+
 func fetchConfigurationId(ctx context.Context, configID string) (string, error) {
 	// Generate the URL for service B
 	url := fmt.Sprintf("%s/%s/%s", config.Config.ConfigurationServiceURL, "configuration", configID)

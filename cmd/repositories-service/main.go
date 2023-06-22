@@ -44,6 +44,7 @@ func main() {
 	handler.GetAllRepositories(r, db, "/repositories")
 	handler.CreateRepository(r, db, "/repositories")
 	handler.GetRepositoryById(r, db, "/repositories/{repository_id}")
+	handler.DeleteRepository(r, db, "/repositories/{repository_id}")
 
 	srv := startServer(r)
 

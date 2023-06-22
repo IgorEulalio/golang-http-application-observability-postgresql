@@ -6,6 +6,7 @@ import (
 
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/config"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/logger"
+	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/utils"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
 )
@@ -44,12 +45,13 @@ func HTTPRequestCounter(next http.Handler) http.Handler {
 
 func TracingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Extract the trace from the incoming request
 		ctx := r.Context()
 
-		// Update the request with the new context
 		r = r.WithContext(ctx)
 
+		traceId := utils.GetTraceId(ctx)
+
+		w.Header().Set("X-Trace-ID", traceId)
 		// Call the next handler, which can be another middleware function or the final handler
 		next.ServeHTTP(w, r)
 	})
