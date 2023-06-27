@@ -85,10 +85,12 @@ func CreateRepository(r *mux.Router, db *sqlx.DB, path string) {
 	r.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		var repo models.Repository
 
+		ctx := r.Context()
+
 		err := json.NewDecoder(r.Body).Decode(&repo)
 		if err != nil {
 			utils.WriteError(w, http.StatusBadRequest, "Invalid request body.")
-			logger.Log.Error("Error decoding repository object: %s", err)
+			logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("Error decoding repository object: %s", err))
 			return
 		}
 
@@ -102,14 +104,14 @@ func CreateRepository(r *mux.Router, db *sqlx.DB, path string) {
 				errors = append(errors, fmt.Sprintf("%s failed on %s validation", field, tag))
 			}
 			utils.WriteError(w, http.StatusUnprocessableEntity, strings.Join(errors, ", "))
-			logger.Log.Error("Validation failed for repository object: %s", err)
+			logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("Validation failed for repository object: %s", err))
 			return
 		}
 
 		repo.ID, err = generateRepoId()
 		if err != nil {
 			utils.WriteError(w, http.StatusInternalServerError, "Internal Server Error.")
-			logger.Log.Error("Error generating UUID for RepositoryID: %s", err)
+			logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("Error generating UUID for RepositoryID: %s", err))
 			return
 		}
 
@@ -126,15 +128,17 @@ func CreateRepository(r *mux.Router, db *sqlx.DB, path string) {
 
 		insertQuery := `INSERT INTO repositories (id, name, owner, creationdate, configurationid) VALUES ($1, $2, $3, $4, $5)`
 
-		_, err = db.Exec(insertQuery, repo.ID, repo.Name, repo.Owner, repo.CreationDate, repo.ConfigurationID)
+		_, err = db.ExecContext(ctx, insertQuery, repo.ID, repo.Name, repo.Owner, repo.CreationDate, repo.ConfigurationID)
 		if err != nil {
-			logger.Log.Error("Error insertind repository in database: %s", err)
+			logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("Error inserting repository in database: %s", err))
+			utils.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("Error inserting repository %s in database.", repo.ID))
 		}
 
 		jsonResponse, err := json.Marshal(repo)
 		if err != nil {
 			// handle error
-			fmt.Fprintf(w, "Error: %s", err)
+			logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("Error marshalling object: %s.", err))
+			utils.WriteError(w, http.StatusInternalServerError, "Error marshalling object.")
 			return
 		}
 
