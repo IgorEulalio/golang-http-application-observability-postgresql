@@ -25,7 +25,10 @@ import (
 func GetAllRepositories(r *mux.Router, db *sqlx.DB, path string) {
 	r.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		var repos []models.Repository
-		err := db.Select(&repos, "SELECT * FROM repositories")
+
+		ctx := r.Context()
+
+		err := db.SelectContext(ctx, &repos, "SELECT * FROM repositories")
 		if err != nil {
 			// handle error
 			utils.WriteError(w, http.StatusInternalServerError, "Error fetching repositories.")

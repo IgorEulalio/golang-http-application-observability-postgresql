@@ -5,14 +5,10 @@ import (
 
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/config"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // or _ "github.com/jackc/pgx/v4/stdlib" for pgx
+	"github.com/uptrace/opentelemetry-go-extra/otelsql"
+	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
 )
-
-func init() {
-	if config.Config == nil {
-		config.LoadConfig()
-	}
-}
 
 func ConnectToDatabase() (*sqlx.DB, error) {
 	psqlInfo := fmt.Sprintf("user=%s dbname=%s sslmode=disable password=%s",
@@ -21,6 +17,17 @@ func ConnectToDatabase() (*sqlx.DB, error) {
 		config.Config.DatabasePassword,
 	)
 
-	db, err := sqlx.Connect("postgres", psqlInfo)
-	return db, err
+	db, err := otelsql.Open("postgres", psqlInfo,
+		otelsql.WithAttributes(semconv.DBSystemPostgreSQL),
+		otelsql.WithDBName(config.Config.DatabaseName),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Wrap the *sql.DB with sqlx
+	dbx := sqlx.NewDb(db, "postgres")
+
+	return dbx, nil
 }
