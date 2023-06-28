@@ -36,7 +36,7 @@ go run ./cmd/repositories-service/main.go
 With the application running properly, you can test the endpoints available:
 1. Create repository:
 ```
-curl --request POST \                                                                                          at  16:18:55
+curl --request POST \
   --url http://localhost:8080/repositories \
   --header 'Content-Type: application/json' \
   --data '{
@@ -49,13 +49,13 @@ curl --request POST \                                                           
 2. Get All Repositories:
 ```
 curl --request GET \
-  --url http://localhost:8080/repositories
+   --url http://localhost:8080/repositories
 ```
 
 3. Get Repository by ID. Replace with the repositoryId returned by create repository:
 ```
 curl --request GET \
-  --url http://localhost:8080/repositories/{reposotiry_id}
+  --url http://localhost:8080/repositories/{repository_id}
 ```
 
 4. Delete repository. Replace with the repositoryId returned by create repository:
