@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: golang-api
+  name: golang-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: golang-api
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: golang-api
+    spec:
+      containers:
+      - image: 835596177334.dkr.ecr.us-east-1.amazonaws.com/golang-api:4bbaa726c173af09520a1d0283d3ebca0ef1b462
+        name: golang-api
+        resources: {}
+status: {}
