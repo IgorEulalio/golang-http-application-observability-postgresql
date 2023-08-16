@@ -14,13 +14,13 @@ WORKDIR /app/cmd/repositories-service
 RUN CGO_ENABLED=0 GOOS=linux go build -o ./main .
 
 # Multi stage build
-# FROM alpine:latest  
+FROM alpine:latest  
 
-# RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates
 
 WORKDIR /root/
 
-# COPY --from=builder /app/cmd/repositories-service/main .
+COPY --from=builder /app/cmd/repositories-service/main .
 
 EXPOSE 8080
 
