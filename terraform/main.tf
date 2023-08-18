@@ -1,10 +1,9 @@
 resource "aws_s3_bucket" "b" {
- bucket = "yo-happy-my-tf-test-bucket"
+ bucket = "dev_s3_bucket"
  acl    = "public"
 
-
  tags = {
-   Name        = "Yo bucket"
+   Name        = "Environment"
    Environment = "Dev"
  }
 }
