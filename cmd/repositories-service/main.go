@@ -94,7 +94,11 @@ func initAndSetGlobalMeterProvider() error {
 
 func setupRouter() *mux.Router {
 	r := mux.NewRouter()
+	r.Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
 	r.Use(otelmux.Middleware(config.Config.ServiceName))
+	r.Use(middleware.CORSHeadersMiddleware)
 	r.Use(logger.LogRequestResponse)
 	r.Use(middleware.HTTPRequestCounter)
 	r.Use(middleware.TracingMiddleware)

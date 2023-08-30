@@ -56,3 +56,21 @@ func TracingMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
+// CORSHeadersMiddleware sets CORS headers for each HTTP request
+func CORSHeadersMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Set CORS headers
+		w.Header().Set("Access-Control-Allow-Origin", "*") // Allow any origin (consider specifying the exact origins for better security)
+		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		w.Header().Set("Access-Control-Allow-Headers", "*")
+		// If it's a pre-flight request, respond immediately
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		// Otherwise, pass to the next middleware or final handler
+		next.ServeHTTP(w, r)
+	})
+}
