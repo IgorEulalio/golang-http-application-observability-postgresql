@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: otel-collector-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: otel-collector
+  template:
+    metadata:
+      labels:
+        app: otel-collector
+    spec:
+      containers:
+        - name: collector
+          image: otel/opentelemetry-collector-contrib:0.72.0
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "100Mi"
+            limits:
+              cpu: "80m"
+              memory: "200Mi"
+          args: ["--config=/conf/collector-config.yaml"]
+          ports:
+            - containerPort: 9464
+            - containerPort: 4317
+            - containerPort: 4318
+          volumeMounts:
+            - name: otel-config
+              mountPath: /conf
+              readOnly: true
+      volumes:
+        - name: otel-config
+          configMap:
+            name: otel-collector-config
+            items:
+              - key: collector-config.yaml
+                path: collector-config.yaml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+data:
+  collector-config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+          http:
+            cors:
+              allowed_origins:
+                - http://*
+                - https://*
+    exporters:
+      otlp:
+        endpoint: tempo:4317
+        tls:
+          insecure: true
+      prometheus:
+        endpoint: "0.0.0.0:9464"
+      jaeger:
+        endpoint: "http://jaeger:14250"
+        tls:
+          insecure: true
+    processors:
+      batch:
+    service:
+      telemetry:
+        logs:
+          level: "debug"
+      pipelines:
+        traces:
+          receivers: [otlp]
+          exporters: [otlp, jaeger]
+          processors: [batch]
+        metrics:
+          receivers: [otlp]
+          exporters: [prometheus]
+          processors: [batch]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: otel-collector-service
+spec:
+  selector:
+    app: otel-collector
+  ports:
+    - name: metrics
+      protocol: TCP
+      port: 9464
+      targetPort: 9464
+    - name: otlp-grpc
+      protocol: TCP
+      port: 4317
+      targetPort: 4317
+    - name: otlp-http
+      protocol: TCP
+      port: 4318
+      targetPort: 4318
+  type: ClusterIP
+
