@@ -36,7 +36,7 @@ func main() {
 
 	shutdown := initializeTracer()
 	initAndSetGlobalMeterProvider()
-
+	defer shutdownTracer(shutdown)
 	// Create server
 	r := setupRouter()
 
@@ -47,13 +47,9 @@ func main() {
 	handler.DeleteRepository(r, db, "/repositories/{repository_id}")
 
 	srv := startServer(r)
-
+	defer shutdownServer(srv)
 	// Wait for interrupt signal
 	waitForShutdownSignal()
-
-	// Shutdown
-	shutdownServer(srv)
-	shutdownTracer(shutdown)
 }
 
 func initializeDatabase() *sqlx.DB {

@@ -32,11 +32,6 @@ func InitProvider() (func(context.Context) error, error) {
 		return nil, fmt.Errorf("failed to create resource: %w", err)
 	}
 
-	// If the OpenTelemetry Collector is running on a local cluster (minikube or
-	// microk8s), it should be accessible through the NodePort service at the
-	// `localhost:30080` endpoint. Otherwise, replace `localhost` with the
-	// endpoint of your cluster. If you run the app inside k8s, then you can
-	// probably connect directly to the service through dns.
 	ctx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 	conn, err := grpc.DialContext(ctx, fmt.Sprintf("%s:%s", config.Config.OtelCollectorEndpoint, config.Config.OtelCollectorPort),

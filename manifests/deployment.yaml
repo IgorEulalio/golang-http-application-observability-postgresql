@@ -17,17 +17,18 @@ spec:
     spec:
       containers:
       - image: 835596177334.dkr.ecr.us-east-1.amazonaws.com/golang-api:4bbaa726c173af09520a1d0283d3ebca0ef1b462
-        env:
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: database-credentials
-              key: password
-        - name: DB_USER
-          valueFrom:
-            secretKeyRef:
-              name: database-credentials
-              key: user
+        env: 
+          - name: OTEL_COLLECTOR_ENDPOINT
+            value: otel-collector-service
+        envFrom:
+          - secretRef:
+              name: postgres-credentials
         name: golang-api
-        resources: {}
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "200Mi"
+          limits:
+            cpu: "200m"
+            memory: "300Mi"
 status: {}
