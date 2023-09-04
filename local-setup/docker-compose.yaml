@@ -4,6 +4,7 @@ volumes:
   postgres_data:
 services:
 
+  # open telemetry collector
   collector:
     image: otel/opentelemetry-collector-contrib:0.72.0
     command: ["--config=/conf/collector-config.yaml"]
@@ -13,7 +14,7 @@ services:
       - "9464:9464"
       - "4317:4317"
       - "4318:4318"
-  # Prometheus
+  # prometheus
   prometheus:
     container_name: prometheus
     image: prom/prometheus:latest
@@ -21,7 +22,7 @@ services:
       - ./prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
-  # Grafana
+  # grafana
   grafana:
     image: grafana/grafana:9.0.1
     container_name: grafana
@@ -31,7 +32,7 @@ services:
     ports:
       - "3000:3000"
 
-  # Database
+  # database
   db:
     image: postgres:13
     restart: always
@@ -63,6 +64,7 @@ services:
       - REDIS_ADDRESS=redis:6379
       - SERVICE_NAME=configuration-service
 
+  # external service database dependency
   redis: 
     image: redis:latest
     volumes:
