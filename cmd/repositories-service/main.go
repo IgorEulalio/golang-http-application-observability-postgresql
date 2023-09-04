@@ -15,9 +15,11 @@ import (
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/logger"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/metrics"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/middleware"
+	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/mq"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/tracer"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
+	"github.com/streadway/amqp"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel"
@@ -41,6 +43,10 @@ func main() {
 	db := initializeDatabase()
 	defer db.Close()
 
+	// Initialize MQ connection
+	mqConnection := initializeMq()
+	defer mqConnection.Close()
+
 	shutdown := initializeTracer()
 	initAndSetGlobalMeterProvider()
 	defer shutdownTracer(shutdown)
@@ -49,7 +55,7 @@ func main() {
 
 	// Setup repository route
 	handler.GetAllRepositories(r, db, "/repositories")
-	handler.CreateRepository(r, db, "/repositories")
+	handler.CreateRepository(r, db, mqConnection, "/repositories")
 	handler.GetRepositoryById(r, db, "/repositories/{repository_id}")
 	handler.DeleteRepository(r, db, "/repositories/{repository_id}")
 
@@ -57,6 +63,16 @@ func main() {
 	defer shutdownServer(srv)
 	// Wait for interrupt signal
 	waitForShutdownSignal()
+}
+
+func initializeMq() *amqp.Connection {
+	mq, err := mq.InitRabbitMQ()
+	if err != nil {
+		logger.Log.Error("shutting down application...")
+		os.Exit(1)
+	}
+	logger.Log.Info("Connected to mq.")
+	return mq
 }
 
 func initializeDatabase() *sqlx.DB {

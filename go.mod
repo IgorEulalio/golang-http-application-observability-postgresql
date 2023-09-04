@@ -48,6 +48,7 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/sirupsen/logrus v1.9.2 // indirect
+	github.com/streadway/amqp v1.1.0
 	github.com/uptrace/opentelemetry-go-extra/otelsql v0.2.2
 	go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.42.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.42.0

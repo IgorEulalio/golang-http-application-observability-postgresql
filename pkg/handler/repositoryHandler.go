@@ -13,11 +13,13 @@ import (
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/config"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/logger"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/models"
+	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/mq"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/utils"
 	"github.com/go-playground/validator"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
+	"github.com/streadway/amqp"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 )
@@ -81,7 +83,7 @@ func GetRepositoryById(r *mux.Router, db *sqlx.DB, path string) {
 	}).Methods(http.MethodGet) // set the HTTP method to GET
 }
 
-func CreateRepository(r *mux.Router, db *sqlx.DB, path string) {
+func CreateRepository(r *mux.Router, db *sqlx.DB, mqConnection *amqp.Connection, path string) {
 	r.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
 		var repo models.Repository
 
@@ -139,6 +141,13 @@ func CreateRepository(r *mux.Router, db *sqlx.DB, path string) {
 			// handle error
 			logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("Error marshalling object: %s.", err))
 			utils.WriteError(w, http.StatusInternalServerError, "Error marshalling object.")
+			return
+		}
+
+		err = mq.SendToQueue(mqConnection, "repositories", jsonResponse)
+		if err != nil {
+			logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("Error sending message to queue: %s", err))
+			utils.WriteError(w, http.StatusInternalServerError, "Error sending message to queue.")
 			return
 		}
 
