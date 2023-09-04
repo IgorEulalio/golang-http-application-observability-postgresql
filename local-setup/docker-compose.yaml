@@ -61,6 +61,7 @@ services:
     environment:
       - OTEL_COLLECTOR_ENDPOINT=collector
       - REDIS_ADDRESS=redis:6379
+      - SERVICE_NAME=configuration-service
 
   redis: 
     image: redis:latest

@@ -96,3 +96,23 @@ func init() {
 
 	Log = logger.WithField("service", serviceName)
 }
+
+func InitLogger(config *config.Configuration) {
+	logger := logrus.New()
+	logger.SetOutput(os.Stdout)
+	logger.SetFormatter(&logrus.JSONFormatter{})
+
+	serviceName := config.ServiceName
+
+	logLevel := config.LogLevel
+
+	level, err := logrus.ParseLevel(strings.ToLower(logLevel))
+	if err != nil {
+		logger.Warningf("Invalid or empty log level provided, defaulting to 'info'. Error: %s", err.Error())
+		level = logrus.InfoLevel
+	}
+
+	logger.SetLevel(level)
+
+	Log = logger.WithField("service", serviceName)
+}

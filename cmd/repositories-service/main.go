@@ -24,8 +24,15 @@ import (
 )
 
 func init() {
-	// Load initial configuration
-	config.LoadConfig()
+	errs := config.LoadConfig()
+	logger.InitLogger(config.Config)
+
+	if len(errs) > 0 {
+		for _, err := range errs {
+			logger.Log.Error(err)
+		}
+		os.Exit(1) // or another code to signify abnormal termination
+	}
 }
 
 func main() {

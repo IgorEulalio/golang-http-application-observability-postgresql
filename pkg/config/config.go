@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 )
 
@@ -17,9 +18,12 @@ type Configuration struct {
 
 var Config *Configuration
 
-func LoadConfig() {
+func LoadConfig() []error {
+
+	var errs []error
+
 	Config = &Configuration{
-		ServiceName:             getEnv("SERVICE_NAME", "repositories_service"),
+		ServiceName:             getEnv("SERVICE_NAME", ""),
 		LogLevel:                getEnv("LOG_LEVEL", "info"),
 		DatabaseUser:            getEnv("DB_USER", "defaultuser"),
 		DatabaseName:            getEnv("DB_NAME", "repositories"),
@@ -28,6 +32,12 @@ func LoadConfig() {
 		OtelCollectorEndpoint:   getEnv("OTEL_COLLECTOR_ENDPOINT", "localhost"),
 		OtelCollectorPort:       getEnv("OTEL_COLLECTOR_PORT", "4317"),
 	}
+
+	if Config.ServiceName == "" {
+		errs = append(errs, fmt.Errorf("SERVICE_NAME is missing"))
+	}
+
+	return errs
 }
 
 func getEnv(key string, defaultVal string) string {
