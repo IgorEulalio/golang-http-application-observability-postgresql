@@ -2,8 +2,11 @@
 package mq
 
 import (
+	"context"
+
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/logger"
 	"github.com/streadway/amqp"
+	"go.opentelemetry.io/otel/trace"
 )
 
 var conn *amqp.Connection
@@ -19,7 +22,10 @@ func InitRabbitMQ() (*amqp.Connection, error) {
 	return conn, nil
 }
 
-func SendToQueue(conn *amqp.Connection, queueName string, message []byte) error {
+func SendToQueue(ctx context.Context, conn *amqp.Connection, queueName string, message []byte) error {
+	span := trace.SpanFromContext(ctx)
+	spanContext := span.SpanContext()
+
 	ch, err := conn.Channel()
 	if err != nil {
 		return err
@@ -38,14 +44,21 @@ func SendToQueue(conn *amqp.Connection, queueName string, message []byte) error 
 		return err
 	}
 
+	msg := amqp.Publishing{
+		ContentType: "application/json",
+		Body:        message,
+		Headers: amqp.Table{
+			"trace_id": spanContext.TraceID().String(),
+			"span_id":  spanContext.SpanID().String(),
+		},
+	}
+
 	err = ch.Publish(
 		"",
 		q.Name,
 		false,
 		false,
-		amqp.Publishing{
-			ContentType: "application/json",
-			Body:        message,
-		})
+		msg,
+	)
 	return err
 }
