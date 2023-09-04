@@ -144,7 +144,7 @@ func CreateRepository(r *mux.Router, db *sqlx.DB, mqConnection *amqp.Connection,
 			return
 		}
 
-		err = mq.SendToQueue(mqConnection, "repositories", jsonResponse)
+		err = mq.SendToQueue(ctx, mqConnection, "repositories", jsonResponse)
 		if err != nil {
 			logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("Error sending message to queue: %s", err))
 			utils.WriteError(w, http.StatusInternalServerError, "Error sending message to queue.")
