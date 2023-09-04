@@ -45,7 +45,19 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
       - ./postgresql/init-db.sh:/docker-entrypoint-initdb.d/init.sql
-  
+
+  # rabbitmq
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    volumes:
+      - ./rabbitmq/init.sh:/docker-entrypoint-init-rabbitmq.d/init-rabbitmq.sh
+    ports:
+      - 15672:15672  # RabbitMQ management UI
+      - 5672:5672    # RabbitMQ service
+
   # jaeger
   jaeger:
     image: jaegertracing/all-in-one
