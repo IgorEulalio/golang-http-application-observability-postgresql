@@ -54,7 +54,7 @@ services:
 
   # external service
   configuration-service:
-    image: igoreulalio/configuration-service:v2
+    image: igoreulalio/configuration-service:v3
     platform: linux/amd64
     ports: 
       - 8081:8081
