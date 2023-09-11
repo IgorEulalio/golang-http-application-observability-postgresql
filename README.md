@@ -1,9 +1,11 @@
 ## Architecture
 
-![image](https://github.com/vmfarms/golang-sample-http-app/assets/41654187/3780ba0b-3216-4228-b0ab-bfe5f5e6e1df)
+![image](./images/architecture.png)
 
 Inside this architecture, we can see the following components:
 - Repository Service: Our main service is instrumented with OpenTelemetry and configured to send metrics and traces to the OpenTelemetry Collector. It also integrates with another service called Configuration Service, which. is also instrumented so we can follow the trace entirely.
+- ReactJS: Simple FrontEnd that allow us to visualize and create repositories by interacting with our backend services.
+- Repository worker: Responsible for fetching messages from the queue and sending them to the database.
 - Configuration Service: Another service that returns the **configurationId**, which the repository service needs when creating new repositories in the database.
 - OpenTelemetry Collector: This collector receives data from the services, processes it, and then sends it to configured monitoring backends.
 - Monitoring backends: Just showing that we can have multiple other technologies being used as backends: Zipkin, Graphite, XRay....
