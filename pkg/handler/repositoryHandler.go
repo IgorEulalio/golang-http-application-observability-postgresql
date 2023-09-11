@@ -32,14 +32,14 @@ func GetAllRepositories(r *mux.Router, db *sqlx.DB, path string) {
 
 		err := db.SelectContext(ctx, &repos, "SELECT * FROM repositories")
 		if err != nil {
-			// handle error
+			logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("Error fetching repositories: %s", err))
 			utils.WriteError(w, http.StatusInternalServerError, "Error fetching repositories.")
 			return
 		}
 
 		jsonResponse, err := json.Marshal(repos)
 		if err != nil {
-			// handle error
+			logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("Error fetching repositories: %s", err))
 			utils.WriteError(w, http.StatusUnprocessableEntity, "Error marshalling repository into struct.")
 			return
 		}
