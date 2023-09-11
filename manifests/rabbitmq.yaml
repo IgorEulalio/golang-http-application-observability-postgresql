@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: development
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      imagePullPolicy: Always
+      containers:
+        - name: rabbitmq
+          image: rabbitmq:3-management
+          env:
+            - name: RABBITMQ_DEFAULT_USER
+              value: "guest"
+            - name: RABBITMQ_DEFAULT_PASS
+              value: "guest"
+          ports:
+            - containerPort: 15672 # RabbitMQ management UI
+            - containerPort: 5672  # RabbitMQ service
+          volumeMounts:
+            - name: init-script
+              mountPath: /docker-entrypoint-init-rabbitmq.d
+      volumes:
+        - name: init-script
+          configMap:
+            name: rabbitmq-init
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq-service
+spec:
+  ports:
+  - port: 5672
+    protocol: TCP
+    targetPort: 5672
+  selector:
+    app: rabbitmq
+---
+apiVersion: v1
+data:
+  init.sh: |+
+    #!/bin/bash
+
+    # Wait for RabbitMQ server to start
+    sleep 10
+
+    # Check if the 'repositories' queue already exists
+    if ! rabbitmqadmin -u guest -p guest list queues name | grep -q 'repositories'; then
+      # Create 'repositories' queue
+      rabbitmqadmin -u guest -p guest declare queue name=repositories durable=true
+    fi
+
+    # Run RabbitMQ server
+    docker-entrypoint.sh rabbitmq-server
+
+kind: ConfigMap
+metadata:
+  name: rabbitmq-init
+
+

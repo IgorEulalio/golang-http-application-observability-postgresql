@@ -16,7 +16,7 @@ spec:
         app: golang-api
     spec:
       containers:
-      - image: igoreulalio/repository-service:v3
+      - image: igoreulalio/repository-service:v5-a
         env: 
           - name: OTEL_COLLECTOR_ENDPOINT
             value: otel-collector-service
@@ -24,6 +24,12 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.name
+          - name: RABBITMQ_HOST
+            value: rabbitmq-service
+          - name: RABBITMQ_PORT
+            value: "5672"
+          - name: DB_HOST
+            value: postgres-service
         envFrom:
           - secretRef:
               name: postgres-credentials

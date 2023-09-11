@@ -8,6 +8,7 @@ import (
 type Configuration struct {
 	ServiceName             string
 	LogLevel                string
+	DatabaseHost            string
 	DatabaseUser            string
 	DatabaseName            string
 	DatabasePassword        string
@@ -29,6 +30,7 @@ func LoadConfig() []error {
 	Config = &Configuration{
 		ServiceName:             getEnv("SERVICE_NAME", ""),
 		LogLevel:                getEnv("LOG_LEVEL", "info"),
+		DatabaseHost:            getEnv("DB_HOST", "localhost"),
 		DatabaseUser:            getEnv("DB_USER", "defaultuser"),
 		DatabaseName:            getEnv("DB_NAME", "repositories"),
 		DatabasePassword:        getEnv("DB_PASSWORD", "defaultpassword"),
