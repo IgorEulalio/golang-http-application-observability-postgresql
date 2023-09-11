@@ -16,14 +16,18 @@ spec:
         app: golang-api
     spec:
       containers:
-      - image: 835596177334.dkr.ecr.us-east-1.amazonaws.com/golang-api:4bbaa726c173af09520a1d0283d3ebca0ef1b462
+      - image: igoreulalio/repository-service:v3
         env: 
           - name: OTEL_COLLECTOR_ENDPOINT
             value: otel-collector-service
+          - name: SERVICE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
         envFrom:
           - secretRef:
               name: postgres-credentials
-        name: golang-api
+        name: repository-service
         resources:
           requests:
             cpu: "100m"
