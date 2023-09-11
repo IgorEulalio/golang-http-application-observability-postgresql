@@ -4,6 +4,7 @@ package mq
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/config"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/logger"
@@ -15,7 +16,14 @@ var conn *amqp.Connection
 
 func InitRabbitMQ() (*amqp.Connection, error) {
 	var err error
-	connectionString := fmt.Sprintf("amqp://%s:%s@%s:%d/", config.Config.RabbitMqUsername, config.Config.RabbitMqPassword, config.Config.RabbitMqHost, config.Config.RabbitMqPort)
+
+	port, err := strconv.Atoi(config.Config.RabbitMqPort)
+	if err != nil {
+		logger.Log.Error("Failed to convert RabbitMQ port to integer: %v", err)
+		return nil, err
+	}
+
+	connectionString := fmt.Sprintf("amqp://%s:%s@%s:%d/", config.Config.RabbitMqUsername, config.Config.RabbitMqPassword, config.Config.RabbitMqHost, port)
 	conn, err = amqp.Dial(connectionString)
 	if err != nil {
 		logger.Log.Error("Failed to connect to RabbitMQ: %v", err)
