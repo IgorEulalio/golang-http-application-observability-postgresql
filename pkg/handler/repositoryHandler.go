@@ -118,6 +118,7 @@ func CreateRepository(r *mux.Router, db *sqlx.DB, mqConnection *amqp.Connection,
 		}
 
 		repo.CreationDate = time.Now()
+		repo.State = "to_be_created"
 
 		configId := repo.ConfigurationID
 
@@ -128,9 +129,9 @@ func CreateRepository(r *mux.Router, db *sqlx.DB, mqConnection *amqp.Connection,
 			return
 		}
 
-		insertQuery := `INSERT INTO repositories (id, name, owner, creationdate, configurationid) VALUES ($1, $2, $3, $4, $5)`
+		insertQuery := `INSERT INTO repositories (id, name, owner, creationdate, configurationid, state) VALUES ($1, $2, $3, $4, $5, $6)`
 
-		_, err = db.ExecContext(ctx, insertQuery, repo.ID, repo.Name, repo.Owner, repo.CreationDate, repo.ConfigurationID)
+		_, err = db.ExecContext(ctx, insertQuery, repo.ID, repo.Name, repo.Owner, repo.CreationDate, repo.ConfigurationID, repo.State)
 		if err != nil {
 			logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Error(fmt.Sprintf("Error inserting repository in database: %s", err))
 			utils.WriteError(w, http.StatusInternalServerError, fmt.Sprintf("Error inserting repository %s in database.", repo.ID))
