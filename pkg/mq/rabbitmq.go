@@ -3,7 +3,9 @@ package mq
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/config"
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/logger"
 	"github.com/streadway/amqp"
 	"go.opentelemetry.io/otel/trace"
@@ -13,7 +15,8 @@ var conn *amqp.Connection
 
 func InitRabbitMQ() (*amqp.Connection, error) {
 	var err error
-	conn, err = amqp.Dial("amqp://guest:guest@localhost:5672/")
+	connectionString := fmt.Sprintf("amqp://%s:%s@%s:%d/", config.Config.RabbitMqUsername, config.Config.RabbitMqPassword, config.Config.RabbitMqHost, config.Config.RabbitMqPort)
+	conn, err = amqp.Dial(connectionString)
 	if err != nil {
 		logger.Log.Error("Failed to connect to RabbitMQ: %v", err)
 		return nil, err
