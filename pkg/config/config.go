@@ -32,7 +32,7 @@ func LoadConfig() []error {
 		LogLevel:                getEnv("LOG_LEVEL", "info"),
 		DatabaseHost:            getEnv("DB_HOST", "localhost"),
 		DatabaseUser:            getEnv("DB_USER", "defaultuser"),
-		DatabaseName:            getEnv("DB_NAME", "repositories"),
+		DatabaseName:            getEnv("DB_NAME", "repositories_db"),
 		DatabasePassword:        getEnv("DB_PASSWORD", "defaultpassword"),
 		ConfigurationServiceURL: getEnv("CONFIGURATION_SERVICE_URL", "http://localhost:8081"),
 		OtelCollectorEndpoint:   getEnv("OTEL_COLLECTOR_ENDPOINT", "localhost"),

@@ -10,4 +10,5 @@ type Repository struct {
 	Owner           string    `db:"owner" validate:"required"`
 	CreationDate    time.Time `db:"creationdate" validate:"-"`
 	ConfigurationID string    `db:"configurationid" validate:"required"`
+	State           string    `db:"state" validate:"-"`
 }

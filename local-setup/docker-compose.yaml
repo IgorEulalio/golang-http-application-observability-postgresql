@@ -39,7 +39,6 @@ services:
     environment:
       POSTGRES_USER: defaultuser
       POSTGRES_PASSWORD: defaultpassword
-      POSTGRES_DB: repositories
     ports:
       - 5432:5432
     volumes:
