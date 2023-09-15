@@ -71,9 +71,10 @@ services:
     ports: 
       - 8081:8081
     environment:
+      - SERVICE_NAME=configuration-service
       - OTEL_COLLECTOR_ENDPOINT=collector
       - REDIS_ADDRESS=redis:6379
-      - SERVICE_NAME=configuration-service
+      
 
   # external service database dependency
   redis: 
@@ -83,3 +84,13 @@ services:
     entrypoint: ["/usr/local/bin/init-redis.sh"]
     ports:
       - 6379:6379
+
+  # external worker
+  repository-worker:
+    image: igoreulalio/repository-worker:v4
+    platform: linux/amd64
+    environment:
+      - SERVICE_NAME=repository-worker
+      - RABBITMQ_HOST=rabbitmq
+      - OTEL_COLLECTOR_ENDPOINT=collector
+      - DB_HOST=db
