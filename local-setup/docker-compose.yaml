@@ -30,7 +30,7 @@ services:
       - ./grafana/grafana.ini:/etc/grafana/grafana.ini
       - ./grafana/provisioning/:/etc/grafana/provisioning/
     ports:
-      - "3000:3000"
+      - "3001:3001"
 
   # database
   db:
@@ -94,3 +94,12 @@ services:
       - RABBITMQ_HOST=rabbitmq
       - OTEL_COLLECTOR_ENDPOINT=collector
       - DB_HOST=db
+
+  # frontend
+  repository-frontend:
+    image: igoreulalio/repository-frontend:v2
+    platform: linux/amd64
+    environment:
+      - REACT_APP_BACKEND_URL=http://localhost:8080
+    ports:
+      - 3000:3000
