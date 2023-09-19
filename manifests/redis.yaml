@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-init-script
+data:
+  init-redis.sh: |
+    #!/bin/sh
+    
+    # Wait for Redis to initialize
+    echo "Waiting for Redis to initialize..."
+    
+    # In this version, we'll run Redis in the background,
+    # then wait for it to become available.
+    /usr/local/bin/redis-server &
+    REDIS_PID=$!
+    
+    until /usr/local/bin/redis-cli ping; do
+      echo "Redis not ready, sleeping..."
+      sleep 1
+    done
+    
+    # Populate data
+    echo "Populating Redis data..."
+    /usr/local/bin/redis-cli set 10 terraform
+    /usr/local/bin/redis-cli set 11 golang
+    /usr/local/bin/redis-cli set 12 aws
+    
+    # Keep Redis running in the foreground
+    wait $REDIS_PID
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      volumes:
+      - name: script-storage
+        emptyDir: {}
+      - name: redis-script-volume
+        configMap:
+          name: redis-init-script
+      initContainers:
+      - name: set-script-permissions
+        image: busybox
+        volumeMounts:
+        - name: redis-script-volume
+          mountPath: /mnt/config
+        - name: script-storage
+          mountPath: /scripts
+        command:
+        - sh
+        - -c
+        - |
+          cp /mnt/config/init-redis.sh /scripts/init-redis.sh &&
+          chmod +x /scripts/init-redis.sh
+      containers:
+      - name: redis
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "200Mi"
+          limits:
+            cpu: "200m"
+            memory: "300Mi"
+        image: redis:latest
+        volumeMounts:
+        - name: script-storage
+          mountPath: /scripts
+        ports:
+        - containerPort: 6379
+        command: ["/scripts/init-redis.sh"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+spec:
+  selector:
+    app: redis
+  ports:
+    - protocol: TCP
+      port: 6379
+      targetPort: 6379
+  type: ClusterIP

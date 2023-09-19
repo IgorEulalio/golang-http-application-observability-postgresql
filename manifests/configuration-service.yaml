@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: configuration-service
+  name: configuration-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configuration-service
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: configuration-service
+    spec:
+      containers:
+      - image: igoreulalio/configuration-service:v3
+        env: 
+          - name: OTEL_COLLECTOR_ENDPOINT
+            value: otel-collector-service
+          - name: SERVICE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: REDIS_ADDRESS
+            value: redis-service:6379
+        # command: ["/bin/sh", "-c", "sleep 3600"]
+        name: configuration-service
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "200Mi"
+          limits:
+            cpu: "200m"
+            memory: "300Mi"

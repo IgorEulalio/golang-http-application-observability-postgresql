@@ -2,18 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: golang-api
-  name: golang-api
+    app: repository-service
+  name: repository-service
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
-      app: golang-api
+      app: repository-service
   strategy: {}
   template:
     metadata:
       labels:
-        app: golang-api
+        app: repository-service
     spec:
       containers:
       - image: igoreulalio/repository-service:v5-a

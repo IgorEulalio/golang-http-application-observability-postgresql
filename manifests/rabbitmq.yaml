@@ -13,7 +13,6 @@ spec:
       labels:
         app: rabbitmq
     spec:
-      imagePullPolicy: Always
       containers:
         - name: rabbitmq
           image: rabbitmq:3-management
