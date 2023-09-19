@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: repository-worker
+  name: repository-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: repository-worker
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: repository-worker
+    spec:
+      containers:
+      - image: igoreulalio/repository-worker:v4
+        env: 
+          - name: OTEL_COLLECTOR_ENDPOINT
+            value: otel-collector-service
+          - name: SERVICE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: RABBITMQ_HOST
+            value: rabbitmq-service
+          - name: RABBITMQ_PORT
+            value: "5672"
+          - name: DB_HOST
+            value: postgres-service
+        envFrom:
+          - secretRef:
+              name: postgres-credentials
+        name: repository-worker
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "200Mi"
+          limits:
+            cpu: "200m"
+            memory: "300Mi"
