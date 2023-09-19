@@ -35,3 +35,16 @@ spec:
           limits:
             cpu: "200m"
             memory: "300Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: configuration-service
+spec:
+  selector:
+    app: configuration-service
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081
+  type: ClusterIP
