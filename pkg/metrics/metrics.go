@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/IgorEulalio/golang-http-application-observability-postgresql/pkg/config"
@@ -15,7 +16,7 @@ func InitMetricsProvider(ctx context.Context) (*sdkmetric.MeterProvider, error) 
 
 	exporter, err := otlpmetricgrpc.New(
 		ctx,
-		otlpmetricgrpc.WithEndpoint("localhost:4317"),
+		otlpmetricgrpc.WithEndpoint(fmt.Sprintf("%s:%s", config.Config.OtelCollectorEndpoint, config.Config.OtelCollectorPort)),
 		otlpmetricgrpc.WithInsecure(),
 	)
 	if err != nil {

@@ -151,6 +151,7 @@ func CreateRepository(r *mux.Router, db *sqlx.DB, mqConnection *amqp.Connection,
 			utils.WriteError(w, http.StatusInternalServerError, "Error sending message to queue.")
 			return
 		}
+		logger.Log.WithField("traceId", utils.GetTraceId(ctx)).Info("Message sent to queue successfully.")
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
