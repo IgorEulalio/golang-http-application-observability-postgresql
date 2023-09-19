@@ -16,7 +16,7 @@ spec:
         app: repository-service
     spec:
       containers:
-      - image: igoreulalio/repository-service:v5-a
+      - image: igoreulalio/repository-service:v6-a
         env: 
           - name: OTEL_COLLECTOR_ENDPOINT
             value: otel-collector-service
@@ -30,6 +30,8 @@ spec:
             value: "5672"
           - name: DB_HOST
             value: postgres-service
+          - name: CONFIGURATION_SERVICE_URL
+            value: http://configuration-service:8081
         envFrom:
           - secretRef:
               name: postgres-credentials
@@ -41,4 +43,16 @@ spec:
           limits:
             cpu: "200m"
             memory: "300Mi"
-status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: repository-service
+spec:
+  selector:
+    app: repository-service
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
