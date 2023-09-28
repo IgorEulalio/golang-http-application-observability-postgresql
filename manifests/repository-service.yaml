@@ -56,3 +56,29 @@ spec:
       port: 8080
       targetPort: 8080
   type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: repository-ingress
+  namespace: development
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip ## requirement of using AWS VPC CNI 
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 8080}]'
+    # alb.ingress.kubernetes.io/group.name: repository
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: repository-service
+                port:
+                  number: 8080
+
+
+                  
