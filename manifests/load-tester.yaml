@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: locust-config
+  namespace: development
+data:
+  locustfile.py: |
+    from locust import HttpUser, task, between
+
+    class RepositoryUser(HttpUser):
+        wait_time = between(1, 2.5)
+
+        @task
+        def get_repositories(self):
+            self.client.get("/repositories")
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: locust-loadtest-pod
+  namespace: development
+spec:
+  containers:
+  - name: locust
+    image: locustio/locust:latest
+    command:
+    - "locust"
+    - "-f"
+    - "/config/locustfile.py"
+    - "--headless"
+    - "--host=http://repository-service:8080"
+    - "--users=10000"
+    - "--spawn-rate=250"
+    - "--run-time=2m"
+    volumeMounts:
+    - name: locust-config-volume
+      mountPath: /config
+  volumes:
+  - name: locust-config-volume
+    configMap:
+      name: locust-config
+  restartPolicy: Never

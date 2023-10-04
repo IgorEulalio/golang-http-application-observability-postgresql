@@ -38,11 +38,11 @@ spec:
         name: repository-service
         resources:
           requests:
-            cpu: "100m"
-            memory: "200Mi"
+            cpu: "250m"
+            memory: "500Mi"
           limits:
-            cpu: "200m"
-            memory: "300Mi"
+            cpu: "250m"
+            memory: "500Mi"
 ---
 apiVersion: v1
 kind: Service
@@ -57,28 +57,28 @@ spec:
       targetPort: 8080
   type: ClusterIP
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: repository-ingress
-  namespace: development
-  annotations:
-    alb.ingress.kubernetes.io/scheme: internet-facing
-    alb.ingress.kubernetes.io/target-type: ip ## requirement of using AWS VPC CNI 
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 8080}]'
-    # alb.ingress.kubernetes.io/group.name: repository
-spec:
-  ingressClassName: alb
-  rules:
-    - http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: repository-service
-                port:
-                  number: 8080
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: repository-ingress
+#   namespace: development
+#   annotations:
+#     alb.ingress.kubernetes.io/scheme: internet-facing
+#     alb.ingress.kubernetes.io/target-type: ip ## requirement of using AWS VPC CNI 
+#     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 8080}]'
+#     # alb.ingress.kubernetes.io/group.name: repository
+# spec:
+#   ingressClassName: alb
+#   rules:
+#     - http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: repository-service
+#                 port:
+#                   number: 8080
 
 
                   

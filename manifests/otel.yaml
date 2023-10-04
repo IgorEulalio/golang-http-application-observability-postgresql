@@ -17,11 +17,11 @@ spec:
           image: otel/opentelemetry-collector-contrib:0.72.0
           resources:
             requests:
-              cpu: "50m"
-              memory: "100Mi"
+              cpu: "100m"
+              memory: "350Mi"
             limits:
-              cpu: "80m"
-              memory: "200Mi"
+              cpu: "100m"
+              memory: "350Mi"
           args: ["--config=/conf/collector-config.yaml"]
           ports:
             - containerPort: 9464
