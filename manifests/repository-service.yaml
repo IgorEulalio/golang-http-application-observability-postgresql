@@ -21,9 +21,7 @@ spec:
           - name: OTEL_COLLECTOR_ENDPOINT
             value: otel-collector-service
           - name: SERVICE_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
+            value: REPOSITORY_SERVICE
           - name: RABBITMQ_HOST
             value: rabbitmq-service
           - name: RABBITMQ_PORT
