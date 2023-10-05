@@ -12,6 +12,7 @@ import (
 )
 
 var serviceName = config.Config.ServiceName
+
 var httpRequestCounter metric.Int64Counter
 
 func InitMetrics(meter metric.Meter) error {
@@ -32,14 +33,19 @@ func InitMetrics(meter metric.Meter) error {
 func HTTPRequestCounter(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
+		// Wrap the original ResponseWriter with our custom one
+		crw := &customResponseWriter{ResponseWriter: w, statusCode: http.StatusOK} // Default to 200 OK if not set explicitly
+
+		next.ServeHTTP(crw, r)
+
 		attrs := []attribute.KeyValue{
 			attribute.String("method", r.Method),
 			attribute.String("path", r.URL.Path),
+			attribute.Int("status_code", crw.statusCode), // Add status code here
 			attribute.String("service", serviceName),
 		}
 		httpRequestCounter.Add(context.Background(), 1, metric.WithAttributes(attrs...))
-		logger.Log.Debug("Sum 1 to %s metric", "http_request_total")
-		next.ServeHTTP(w, r)
+		logger.Log.Debug("Sum 1 to %s metric with status code %d", "http_request_total", crw.statusCode)
 	})
 }
 
@@ -73,4 +79,14 @@ func CORSHeadersMiddleware(next http.Handler) http.Handler {
 		// Otherwise, pass to the next middleware or final handler
 		next.ServeHTTP(w, r)
 	})
+}
+
+type customResponseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func (rw *customResponseWriter) WriteHeader(statusCode int) {
+	rw.statusCode = statusCode
+	rw.ResponseWriter.WriteHeader(statusCode)
 }
