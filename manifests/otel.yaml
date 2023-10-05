@@ -6,11 +6,16 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: otel-collector
+      app: otel
   template:
     metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9464"
+        prometheus.io/path: "/metrics"
+        prometheus.io/protocol: "http"
       labels:
-        app: otel-collector
+        app: otel
     spec:
       containers:
         - name: collector
@@ -34,7 +39,7 @@ spec:
       volumes:
         - name: otel-config
           configMap:
-            name: otel-collector-config
+            name: otel-config
             items:
               - key: collector-config.yaml
                 path: collector-config.yaml
@@ -42,7 +47,7 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: otel-collector-config
+  name: otel-config
 data:
   collector-config.yaml: |
     receivers:
@@ -83,7 +88,7 @@ metadata:
   name: otel-collector-service
 spec:
   selector:
-    app: otel-collector
+    app: otel
   ports:
     - name: metrics
       protocol: TCP
