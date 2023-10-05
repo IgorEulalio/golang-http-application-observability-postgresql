@@ -16,7 +16,7 @@ spec:
         app: repository-service
     spec:
       containers:
-      - image: igoreulalio/repository-service:v6-a
+      - image: igoreulalio/repository-service:v7
         env: 
           - name: OTEL_COLLECTOR_ENDPOINT
             value: otel-collector-service
