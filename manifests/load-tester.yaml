@@ -29,9 +29,9 @@ spec:
     - "/config/locustfile.py"
     - "--headless"
     - "--host=http://repository-service:8080"
-    - "--users=10000"
-    - "--spawn-rate=250"
-    - "--run-time=2m"
+    - "--users=300"
+    - "--spawn-rate=50"
+    - "--run-time=30m"
     volumeMounts:
     - name: locust-config-volume
       mountPath: /config
