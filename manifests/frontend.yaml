@@ -25,7 +25,7 @@ spec:
           imagePullPolicy: Always
           env:
             - name: REACT_APP_BACKEND_URL
-              value: "http://k8s-developm-reposito-79d7b3c8f6-265954643.us-east-1.elb.amazonaws.com"
+              value: "http://repository.api.igor.dev.draios.com"
           ports:
             - containerPort: 3000
 ---
@@ -48,6 +48,7 @@ metadata:
   name: repository-frontend-ingress
   namespace: development
   annotations:
+    external-dns.alpha.kubernetes.io/hostname: repository.igor.dev.draios.com
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
