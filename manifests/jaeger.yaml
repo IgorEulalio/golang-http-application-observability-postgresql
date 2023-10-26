@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jaeger-deployment
+  namespace: development
 spec:
   replicas: 1
   selector:
@@ -30,6 +31,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: jaeger-service
+  namespace: development
 spec:
   selector:
     app: jaeger

@@ -4,6 +4,7 @@ metadata:
   labels:
     app: repository-worker
   name: repository-worker
+  namespace: development
 spec:
   replicas: 1
   selector:
