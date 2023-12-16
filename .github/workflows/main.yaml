@@ -37,6 +37,8 @@ jobs:
           push: false
           tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
           load: true # Loads the image into the runner's Docker daemon
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Saving the image name to use it later
         run: echo "IMAGE_NAME=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}" >> $GITHUB_ENV
