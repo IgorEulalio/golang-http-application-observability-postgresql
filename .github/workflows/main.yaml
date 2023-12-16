@@ -28,6 +28,11 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
+      
+      - name: Create and change builder driver
+        id: create-and-change-builder-driver
+        run: |
+          docker buildx create --use --name=custom-docker-container-builder --driver=docker-container
 
       - name: Build Docker image
         id: build-image
