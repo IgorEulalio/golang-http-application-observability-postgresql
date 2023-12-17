@@ -1,0 +1,7 @@
+images/
+local-setup/
+manifests/
+create.sh
+destroy.sh
+README.md
+Dockerfile
