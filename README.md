@@ -63,7 +63,7 @@ curl --request GET \
 4. Delete repository. Replace with the repositoryId returned by create repository:
 ```
 curl --request DELETE \
-  --url http://localhost:8080/repositories/{reposotiry_id}
+  --url http://localhost:8080/repositories/{repository_id}
 ```
 
 
