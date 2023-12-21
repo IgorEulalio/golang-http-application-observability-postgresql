@@ -1,6 +1,6 @@
 resource "aws_s3_bucket" "b" {
  bucket = "dev_s3_bucket"
- acl    = "public"
+ acl    = "public" ## test
 
  tags = {
    Name        = "Environment"
