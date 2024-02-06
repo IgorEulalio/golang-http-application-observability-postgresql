@@ -20,15 +20,15 @@ WORKDIR /app/cmd/repositories-service
 RUN CGO_ENABLED=0 GOOS=linux go build -o ./main .
 
 # Multi stage build
-FROM alpine:latest as runner
+# FROM alpine:latest as runner
 
-RUN apk --no-cache add ca-certificates
+# RUN apk --no-cache add ca-certificates
 
-WORKDIR /root/
+# WORKDIR /root/
 
-COPY --from=builder /app/cmd/repositories-service/main .
+# COPY --from=builder /app/cmd/repositories-service/main .
 
-COPY --link setup.sh /root/
+# COPY --link setup.sh /root/
 
 EXPOSE 8080
 
