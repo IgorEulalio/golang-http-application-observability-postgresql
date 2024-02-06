@@ -34,7 +34,7 @@ cd $PROJECT_HOME
 go run ./cmd/repositories-service/main.go
 ```
 
-### Testing endpoints
+### Testing endpoint
 With the application running properly, you can test the endpoints available:
 1. Create repository:
 ```
