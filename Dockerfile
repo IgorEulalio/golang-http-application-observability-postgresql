@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.4
 
 # Start from the official Golang image to build the binary file
-FROM golang:1.20 as builder
+FROM golang:1.21 as builder
 
 ENV GO111MODULE=on
 
