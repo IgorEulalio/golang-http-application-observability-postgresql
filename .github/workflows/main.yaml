@@ -60,10 +60,10 @@ jobs:
       - name: Scan image
         uses: sysdiglabs/scan-action@v4
         with:
-          image-tag: "sysdiglabs/dummy-vuln-app:latest"
+          image-tag: ${{ env.IMAGE_NAME }}
           sysdig-secure-token: ${{ secrets.SECURE_API_TOKEN }}
           sysdig-secure-url: ${{ secrets.API_URL }}
-          extra-parameters: "--iac"
+          # extra-parameters: "--iac"
 
       - name: Scan infrastructure
         run: SECURE_API_TOKEN=${{ secrets.SECURE_API_TOKEN }} ./sysdig-cli-scanner --iac -r -f H --apiurl ${{ secrets.API_URL }} ./terraform
