@@ -14,6 +14,10 @@ resource "aws_instance" "risky_instance" {
   # Disable source/destination check (not recommended for most instances)
   source_dest_check = false
 
+  metadata_options {
+    http_tokens = "required"
+  }
+
   user_data = <<-EOF
     #!/bin/bash
     echo "This is a risky user data script!"
