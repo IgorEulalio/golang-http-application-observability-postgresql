@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - test
 
 env:
   ECR_REGISTRY: 835596177334.dkr.ecr.us-east-1.amazonaws.com
@@ -58,12 +59,14 @@ jobs:
         run: SECURE_API_TOKEN=${{ secrets.SECURE_API_TOKEN }} ./sysdig-cli-scanner --apiurl ${{ secrets.API_URL }} $IMAGE_NAME
 
       - name: Scan image with built-in action
-        uses: sysdiglabs/scan-action@v4
+        uses: sysdiglabs/scan-action@feat/add-iac-support
         with:
-          image-tag: ${{ env.IMAGE_NAME }}
+          # image-tag: ${{ env.IMAGE_NAME }}
           sysdig-secure-token: ${{ secrets.SECURE_API_TOKEN }}
           sysdig-secure-url: ${{ secrets.API_URL }}
-          extra-parameters: "-p /etc/hosts"
+          mode: iac
+          iac-scan-path: ./terraform
+          # extra-parameters: "-p /etc/hosts"
 
       - name: Scan infrastructure
         run: SECURE_API_TOKEN=${{ secrets.SECURE_API_TOKEN }} ./sysdig-cli-scanner --iac -r -f H --apiurl ${{ secrets.API_URL }} ./terraform
