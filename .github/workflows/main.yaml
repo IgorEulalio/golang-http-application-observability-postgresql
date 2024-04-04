@@ -59,7 +59,7 @@ jobs:
       #   run: SECURE_API_TOKEN=${{ secrets.SECURE_API_TOKEN }} ./sysdig-cli-scanner --apiurl ${{ secrets.API_URL }} $IMAGE_NAME
 
       - name: Scan infrastructure with built-in action
-        uses: sysdiglabs/scan-action@7fb0096bdbbc75001ce4644335dee35a27c85589
+        uses: sysdiglabs/scan-action@feat/add-iac-support
         with:
           cli-scanner-version: 1.9.0
           sysdig-secure-token: ${{ secrets.SECURE_API_TOKEN }}
