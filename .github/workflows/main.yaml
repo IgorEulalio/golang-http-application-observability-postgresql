@@ -20,47 +20,48 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+      # - name: Configure AWS credentials
+      #   uses: aws-actions/configure-aws-credentials@v1
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: ${{ env.AWS_REGION }}
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
+      # - name: Login to Amazon ECR
+      #   id: login-ecr
+      #   uses: aws-actions/amazon-ecr-login@v1
       
-      - name: Create and change builder driver
-        id: create-and-change-builder-driver
-        run: |
-          docker buildx create --use --name=custom-docker-container-builder --driver=docker-container
+      # - name: Create and change builder driver
+      #   id: create-and-change-builder-driver
+      #   run: |
+      #     docker buildx create --use --name=custom-docker-container-builder --driver=docker-container
 
-      - name: Build Docker image
-        id: build-image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: false
-          tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
-          load: true # Loads the image into the runner's Docker daemon
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      # - name: Build Docker image
+      #   id: build-image
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     context: .
+      #     push: false
+      #     tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+      #     load: true # Loads the image into the runner's Docker daemon
+      #     cache-from: type=gha
+      #     cache-to: type=gha,mode=max
 
-      - name: Saving the image name to use it later
-        run: echo "IMAGE_NAME=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}" >> $GITHUB_ENV
+      # - name: Saving the image name to use it later
+      #   run: echo "IMAGE_NAME=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}" >> $GITHUB_ENV
 
-      - name: Download sysdig-cli-scanner
-        run: |
-          curl -LO "https://download.sysdig.com/scanning/bin/sysdig-cli-scanner/$(curl -L -s https://download.sysdig.com/scanning/sysdig-cli-scanner/latest_version.txt)/linux/amd64/sysdig-cli-scanner"
-          chmod +x sysdig-cli-scanner
+      # - name: Download sysdig-cli-scanner
+      #   run: |
+      #     curl -LO "https://download.sysdig.com/scanning/bin/sysdig-cli-scanner/$(curl -L -s https://download.sysdig.com/scanning/sysdig-cli-scanner/latest_version.txt)/linux/amd64/sysdig-cli-scanner"
+      #     chmod +x sysdig-cli-scanner
 
-      - name: Scan the image
-        run: SECURE_API_TOKEN=${{ secrets.SECURE_API_TOKEN }} ./sysdig-cli-scanner --apiurl ${{ secrets.API_URL }} $IMAGE_NAME
+      # - name: Scan the image
+      #   run: SECURE_API_TOKEN=${{ secrets.SECURE_API_TOKEN }} ./sysdig-cli-scanner --apiurl ${{ secrets.API_URL }} $IMAGE_NAME
 
-      - name: Scan image with built-in action
+      - name: Scan infrastructure with built-in action
         uses: sysdiglabs/scan-action@feat/add-iac-support
         with:
+          cli-scanner-version: 1.9.0
           sysdig-secure-token: ${{ secrets.SECURE_API_TOKEN }}
           sysdig-secure-url: ${{ secrets.API_URL }}
           mode: iac
