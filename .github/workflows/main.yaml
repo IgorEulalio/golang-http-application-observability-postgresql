@@ -67,16 +67,16 @@ jobs:
           mode: iac
           iac-scan-path: ./terraform
 
-      - name: Scan infrastructure
-        run: SECURE_API_TOKEN=${{ secrets.SECURE_API_TOKEN }} ./sysdig-cli-scanner --iac -r -f H --apiurl ${{ secrets.API_URL }} ./terraform
+      # - name: Scan infrastructure
+      #   run: SECURE_API_TOKEN=${{ secrets.SECURE_API_TOKEN }} ./sysdig-cli-scanner --iac -r -f H --apiurl ${{ secrets.API_URL }} ./terraform
 
-      - name: Push Docker image to ECR
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
-          push: true
+      # - name: Push Docker image to ECR
+      #   uses: docker/build-push-action@v2
+      #   with:
+      #     context: .
+      #     tags: ${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+      #     push: true
 
-      - name: Logout from Amazon ECR
-        if: always()
-        run: docker logout ${{ env.ECR_REGISTRY }}
+      # - name: Logout from Amazon ECR
+      #   if: always()
+      #   run: docker logout ${{ env.ECR_REGISTRY }}
