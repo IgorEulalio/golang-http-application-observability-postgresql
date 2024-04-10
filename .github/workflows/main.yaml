@@ -66,6 +66,8 @@ jobs:
           sysdig-secure-url: ${{ secrets.API_URL }}
           mode: iac
           iac-scan-path: ./terraform
+          recursive: true
+          
 
       # - name: Scan infrastructure
       #   run: SECURE_API_TOKEN=${{ secrets.SECURE_API_TOKEN }} ./sysdig-cli-scanner --iac -r -f H --apiurl ${{ secrets.API_URL }} ./terraform
