@@ -60,11 +60,18 @@ jobs:
 
       - name: Scan image with built-in action
         uses: sysdiglabs/scan-action@v5
+        id: scan
         with:
           cli-scanner-version: 1.9.0
           sysdig-secure-token: ${{ secrets.SECURE_API_TOKEN }}
           sysdig-secure-url: ${{ secrets.API_URL }}
           image-tag: ${{ env.IMAGE_NAME }}
+
+      - name: Upload scan report as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: scan-report
+          path: ${{ steps.scan.outputs.scanReport }}
 
       - name: Scan infrastructure with built-in action
         uses: sysdiglabs/scan-action@v5
