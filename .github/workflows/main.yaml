@@ -68,7 +68,7 @@ jobs:
           image-tag: ${{ env.IMAGE_NAME }}
 
       - name: Upload scan report as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: scan-report
           path: ${{ steps.scan.outputs.scanReport }}
